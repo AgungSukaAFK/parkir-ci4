@@ -1,68 +1,126 @@
-# CodeIgniter 4 Application Starter
+Berikut ini contoh update README.md untuk project parkir kamu, dengan tambahan penjelasan fitur dan struktur database yang kamu gunakan, termasuk fitur baru penghasilan:
+
+---
+
+# CodeIgniter 4 Application Starter - Parking Management
 
 ## What is CodeIgniter?
 
 CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
 More information can be found at the [official site](https://codeigniter.com).
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+This repository holds a composer-installable app starter, built from the [development repository](https://github.com/codeigniter4/CodeIgniter4).
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+You can read the [user guide](https://codeigniter.com/user_guide/) corresponding to the latest version of the framework.
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+---
 
 ## Installation & updates
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+Run:
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+```bash
+composer create-project codeigniter4/appstarter
+composer update
+```
+
+Check release notes for updates related to the `app` folder.
+
+---
 
 ## Setup
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+Copy `.env` from `env` and configure your `baseURL` and database settings.
+
+---
 
 ## Important Change with index.php
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+`index.php` is inside the _public_ folder for security reasons.
+Configure your web server to point to the _public_ folder, not project root.
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
-
-**Please** read the user guide for a better explanation of how CI4 works!
+---
 
 ## Repository Management
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+Bug reports and feature requests are handled on the [CodeIgniter forum](http://forum.codeigniter.com).
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+---
 
 ## Server Requirements
 
-PHP version 8.1 or higher is required, with the following extensions installed:
+PHP 8.1+ with intl, mbstring, json, mysqlnd, and libcurl extensions enabled.
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+---
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
+## Parking Management Application Features
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+- **Input Kendaraan Masuk**
+  Input kendaraan baru dengan data nomor polisi, jenis kendaraan, dan waktu masuk.
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+- **Kendaraan Keluar**
+  Proses keluar kendaraan dengan perhitungan biaya parkir berdasarkan durasi.
+  Tarif dasar per jam tergantung jenis kendaraan, dengan biaya tambahan per jam setelah jam pertama.
+
+- **Riwayat Parkir**
+  Menampilkan daftar kendaraan yang masuk dan keluar beserta status, waktu, dan total bayar.
+
+- **Penghasilan Parkir**
+  Menampilkan ringkasan kendaraan yang sudah keluar dan total pendapatan dari parkir.
+
+---
+
+## Struktur Database
+
+Tabel utama: `parkir`
+
+| Field             | Tipe Data                         | Keterangan                                 |
+| ----------------- | --------------------------------- | ------------------------------------------ |
+| `id`              | INT (Primary Key, Auto Increment) | ID unik setiap transaksi parkir            |
+| `no_polisi`       | VARCHAR                           | Nomor polisi kendaraan                     |
+| `jenis_kendaraan` | VARCHAR                           | Jenis kendaraan (Motor, Bus, dll)          |
+| `harga_per_jam`   | INT                               | Tarif dasar per jam                        |
+| `waktu`           | DATETIME                          | Waktu kendaraan masuk atau keluar          |
+| `waktu_keluar`    | DATETIME NULL                     | Waktu kendaraan keluar (diisi saat keluar) |
+| `status`          | ENUM('MASUK','KELUAR')            | Status kendaraan (masuk/keluar)            |
+| `total_bayar`     | INT NULL                          | Total biaya parkir (diisi saat keluar)     |
+
+---
+
+## Routes (Contoh)
+
+```php
+$routes->get('/', 'Parkir::index');
+$routes->post('parkir/simpan', 'Parkir::simpan');
+$routes->get('parkir/keluar/(:num)', 'Parkir::keluar/$1');
+$routes->get('parkir/penghasilan', 'Parkir::penghasilan');
+```
+
+---
+
+## Controller Highlight
+
+- `Parkir::index()`
+  Menampilkan halaman input dan riwayat parkir.
+
+- `Parkir::simpan()`
+  Proses simpan kendaraan masuk dan keluar dengan hitung biaya parkir.
+
+- `Parkir::keluar($id)`
+  Menandai kendaraan dengan `id` tertentu sebagai keluar, menghitung biaya, dan update data.
+
+- `Parkir::penghasilan()`
+  Menampilkan data riwayat kendaraan keluar dan total pendapatan.
+
+---
+
+## Notes
+
+- Tarif dasar per jam disesuaikan dengan jenis kendaraan.
+- Biaya tambahan Rp2.000 per jam setelah jam pertama dihitung saat keluar.
+- `waktu_keluar` dan `total_bayar` diupdate saat kendaraan keluar.
+- Fitur alert menggunakan AdminLTE demo.js sudah bisa diterapkan untuk notifikasi sukses/gagal operasi.
+
+---
+
+Kalau kamu mau aku buatkan contoh file SQL untuk bikin tabel `parkir` sesuai di atas, tinggal bilang ya!
