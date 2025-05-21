@@ -10,13 +10,8 @@ class ParkirModel extends Model
     protected $primaryKey = 'id';
 
     protected $allowedFields = [
-        'no_polisi',
-        'jenis_kendaraan',
-        'harga_per_jam',
-        'waktu',
-        'status',
-        'total_bayar'
-    ];
-
+    'no_polisi', 'jenis_kendaraan', 'harga_per_jam', 'waktu',
+    'waktu_keluar', 'status', 'total_bayar'
+];
     protected $useTimestamps = false;
 }

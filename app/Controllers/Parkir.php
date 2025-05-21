@@ -27,48 +27,55 @@ class Parkir extends BaseController
     }
 
     public function simpan()
-    {
-        $model = new ParkirModel();
-        $jenis = $this->request->getPost('jenis_kendaraan');
-        $nopol = strtoupper($this->request->getPost('no_polisi'));
-        $hargaPerJam = (int)$this->request->getPost('harga');
-        $now = date('Y-m-d H:i:s');
+{
+    $no_polisi = $this->request->getPost('no_polisi');
+    $jenis_kendaraan = $this->request->getPost('jenis_kendaraan');
+    $harga_per_jam = $this->request->getPost('harga');
 
-        // Cek apakah kendaraan sudah masuk tapi belum keluar
-        $existing = $model->where(['no_polisi' => $nopol, 'status' => 'MASUK'])->first();
+    $parkirModel = new \App\Models\ParkirModel();
 
-        if (!$existing) {
-            // Belum masuk → Simpan sebagai MASUK
-            $model->save([
-                'no_polisi' => $nopol,
-                'jenis_kendaraan' => $jenis,
-                'harga_per_jam' => $hargaPerJam,
-                'waktu' => $now,
-                'status' => 'MASUK'
-            ]);
-        } else {
-            // Sudah masuk → hitung durasi dan simpan KELUAR
-            $waktuMasuk = strtotime($existing['waktu']);
-            $waktuKeluar = strtotime($now);
-            $durasiJam = ceil(($waktuKeluar - $waktuMasuk) / 3600); // Jam dibulatkan ke atas
+    $dataMasuk = $parkirModel->where('no_polisi', $no_polisi)
+                             ->where('status', 'MASUK')
+                             ->first();
 
-            $biaya = $hargaPerJam;
-            if ($durasiJam > 1) {
-                $biaya += ($durasiJam - 1) * 2000;
-            }
+    if ($dataMasuk) {
+    // Kendaraan keluar
+    $waktu_masuk = new \DateTime($dataMasuk['waktu']);
+    $waktu_keluar = new \DateTime();
 
-            $model->save([
-                'no_polisi' => $nopol,
-                'jenis_kendaraan' => $existing['jenis_kendaraan'],
-                'harga_per_jam' => $existing['harga_per_jam'],
-                'waktu' => $now,
-                'status' => 'KELUAR',
-                'total_bayar' => $biaya
-            ]);
-        }
 
-        return redirect()->to('/');
+    $selisih_jam = ceil(($waktu_keluar->getTimestamp() - $waktu_masuk->getTimestamp()) / 3600); // hitung jam dibulatkan ke atas
+    $harga_per_jam = (int) $dataMasuk['harga_per_jam'];
+
+    // Hitung total bayar
+    if ($selisih_jam <= 1) {
+        $total_bayar = $harga_per_jam;
+    } else {
+        $total_bayar = $harga_per_jam + (($selisih_jam - 1) * 2000);
     }
+
+    $parkirModel->update($dataMasuk['id'], [
+        'waktu_keluar' => $waktu_keluar->format('Y-m-d H:i:s'),
+        'status'       => 'KELUAR',
+        'total_bayar'  => $total_bayar
+    ]);
+
+    return redirect()->back()->with('message', 'Kendaraan keluar. Total bayar: Rp ' . number_format($total_bayar, 0, ',', '.'));
+}
+ else {
+        // Kendaraan masuk
+        $parkirModel->insert([
+            'no_polisi'       => $no_polisi,
+            'jenis_kendaraan' => $jenis_kendaraan,
+            'harga_per_jam'   => $harga_per_jam,
+            'waktu'           => date('Y-m-d H:i:s'),
+            'status'          => 'MASUK'
+        ]);
+
+        return redirect()->back()->with('message', 'Kendaraan masuk berhasil dicatat.');
+    }
+}
+
 
     public function keluar($id)
     {
@@ -89,11 +96,25 @@ class Parkir extends BaseController
             $biaya += ($durasiJam - 1) * 2000;
         }
 
-        $model->update($id, [
-            'waktu_keluar' => $now,
-            'status' => 'KELUAR',
-            'total_bayar' => $biaya
-        ]);
+        $model->save([
+    'id' => $dataMasuk['id'],
+    'status' => 'KELUAR',
+    'waktu_keluar' => $waktu_keluar->format('Y-m-d H:i:s'),
+    'total_bayar' => $total_bayar
+]);
+
+// Simpan ke penghasilan_parkir
+$db = \Config\Database::connect();
+$db->table('penghasilan_parkir')->insert([
+    'parkir_id' => $dataMasuk['id'],
+    'no_polisi' => $dataMasuk['no_polisi'],
+    'jenis_kendaraan' => $dataMasuk['jenis_kendaraan'],
+    'waktu_masuk' => $dataMasuk['waktu'],
+    'waktu_keluar' => $waktu_keluar->format('Y-m-d H:i:s'),
+    'durasi_jam' => $durasi_jam,
+    'total_bayar' => $total_bayar
+]);
+
 
         return redirect()->to('/')->with('success', 'Kendaraan berhasil dikeluarkan.');
     }

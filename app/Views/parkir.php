@@ -105,98 +105,98 @@
             <!-- Main content -->
             <!-- Main content -->
             <section class="content">
-                <div class="container-fluid">
-                    <!-- Form Input -->
-                    <div class="card mb-4">
-                        <div class="card-body">
-                            <form action="<?= base_url('parkir/simpan') ?>" method="post">
-                                <div class="row mb-3">
-                                    <div class="col-md-6">
-                                        <label for="jenis_kendaraan">Jenis Kendaraan</label>
-                                        <select name="jenis_kendaraan" id="jenis_kendaraan" class="form-control" onchange="updateHarga()">
-                                            <option value="Motor" data-harga="3000">Motor</option>
-                                            <option value="Mini Bus" data-harga="5000">Mini Bus</option>
-                                            <option value="Truck" data-harga="7000">Truck</option>
-                                            <option value="Bus" data-harga="10000">Bus</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="harga">Harga per Jam</label>
-                                        <input type="text" class="form-control" id="harga" name="harga" readonly>
-                                    </div>
-                                </div>
-                                <div class="form-group text-center">
-                                    <label for="no_polisi">No Polisi</label>
-                                    <input type="text" id="no_polisi" name="no_polisi" class="form-control form-control-lg text-center" required>
-                                    <button type="submit" class="btn btn-primary mt-3">Simpan (MASUK)</button>
-                                </div>
-                            </form>
+    <div class="container-fluid">
 
-                            <script>
-                                function updateHarga() {
-                                    const select = document.getElementById("jenis_kendaraan");
-                                    const harga = select.options[select.selectedIndex].getAttribute("data-harga");
-                                    document.getElementById("harga").value = harga;
-                                }
-                                window.onload = updateHarga;
-                            </script>
+        <!-- Alert -->
+        <?php if (session()->getFlashdata('success')): ?>
+            <div class="alert alert-success"><?= session()->getFlashdata('success') ?></div>
+        <?php elseif (session()->getFlashdata('error')): ?>
+            <div class="alert alert-danger"><?= session()->getFlashdata('error') ?></div>
+        <?php endif; ?>
 
+        <!-- Form Input/Keluar -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="<?= base_url('parkir/simpan') ?>" method="post">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="jenis_kendaraan">Jenis Kendaraan</label>
+                            <select name="jenis_kendaraan" id="jenis_kendaraan" class="form-control" onchange="updateHarga()">
+                                <option value="Motor" data-harga="3000">Motor</option>
+                                <option value="Mini Bus" data-harga="5000">Mini Bus</option>
+                                <option value="Truck" data-harga="7000">Truck</option>
+                                <option value="Bus" data-harga="10000">Bus</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="harga">Harga per Jam</label>
+                            <input type="text" class="form-control" id="harga" name="harga" readonly>
                         </div>
                     </div>
 
-                    <!-- Tabel Riwayat -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Riwayat Kendaraan</h3>
-                        </div>
-                        <div class="card-body p-0">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>No.</th>
-                                        <th>No Polisi</th>
-                                        <th>Jenis</th>
-                                        <th>Masuk</th>
-                                        <th>Keluar</th>
-                                        <th>Status</th>
-                                        <th>Total Bayar</th>
-                                        <th>Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php $no = 1;
-                                    foreach ($riwayat as $k): ?>
-                                        <tr>
-                                            <td><?= $no++ ?></td>
-                                            <td><?= $k['no_polisi'] ?></td>
-                                            <td><?= $k['jenis_kendaraan'] ?></td>
-                                            <td><?= $k['waktu'] ?></td>
-                                            <td><?= $k['waktu_keluar'] ?? '-' ?></td>
-                                            <td>
-                                                <span class="badge <?= $k['status'] == 'MASUK' ? 'badge-success' : 'badge-danger' ?>">
-                                                    <?= $k['status'] ?>
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <?= $k['total_bayar'] ? number_format($k['total_bayar'], 0, ',', '.') : '-' ?>
-                                            </td>
-                                            <td>
-                                                <?php if ($k['status'] == 'MASUK'): ?>
-                                                    <a href="<?= base_url('parkir/keluar/' . $k['id']) ?>" class="btn btn-sm btn-danger">Keluarkan</a>
-                                                <?php else: ?>
-                                                    -
-                                                <?php endif; ?>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-
-                        </div>
+                    <div class="form-group text-center">
+                        <label for="no_polisi">No Polisi</label>
+                        <input type="text" id="no_polisi" name="no_polisi" class="form-control form-control-lg text-center" placeholder="Contoh: B1234XYZ" required>
+                        <button type="submit" class="btn btn-primary mt-3">Simpan / Keluar</button>
+                        <p class="text-muted mt-2">*Isi No Polisi lalu klik tombol. Sistem akan mendeteksi apakah kendaraan masuk atau keluar.</p>
                     </div>
+                </form>
 
-                </div><!-- /.container-fluid -->
-            </section>
+                <script>
+                    function updateHarga() {
+                        const select = document.getElementById("jenis_kendaraan");
+                        const harga = select.options[select.selectedIndex].getAttribute("data-harga");
+                        document.getElementById("harga").value = harga;
+                    }
+                    window.onload = updateHarga;
+                </script>
+            </div>
+        </div>
+
+        <!-- Tabel Riwayat -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Riwayat Kendaraan</h3>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>No Polisi</th>
+                            <th>Jenis</th>
+                            <th>Masuk</th>
+                            <th>Keluar</th>
+                            <th>Status</th>
+                            <th>Total Bayar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php $no = 1; foreach ($riwayat as $k): ?>
+                            <tr>
+                                <td><?= $no++ ?></td>
+                                <td><?= esc($k['no_polisi']) ?></td>
+                                <td><?= esc($k['jenis_kendaraan']) ?></td>
+                                <td><?= esc($k['waktu']) ?></td>
+                                <td><?= $k['waktu_keluar'] ?? '-' ?></td>
+                                <td>
+                                    <span class="badge <?= $k['status'] == 'MASUK' ? 'badge-success' : 'badge-danger' ?>">
+                                        <?= $k['status'] ?>
+                                    </span>
+                                </td>
+                                <td>
+                                    <?= $k['total_bayar'] ? 'Rp ' . number_format($k['total_bayar'], 0, ',', '.') : '-' ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</section>
+
             <!-- /.content -->
 
         </div>

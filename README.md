@@ -72,7 +72,7 @@ PHP 8.1+ with intl, mbstring, json, mysqlnd, and libcurl extensions enabled.
 
 ## Struktur Database
 
-Tabel utama: `parkir`
+### Tabel utama: `parkir`
 
 | Field             | Tipe Data                         | Keterangan                                 |
 | ----------------- | --------------------------------- | ------------------------------------------ |
@@ -80,10 +80,26 @@ Tabel utama: `parkir`
 | `no_polisi`       | VARCHAR                           | Nomor polisi kendaraan                     |
 | `jenis_kendaraan` | VARCHAR                           | Jenis kendaraan (Motor, Bus, dll)          |
 | `harga_per_jam`   | INT                               | Tarif dasar per jam                        |
-| `waktu`           | DATETIME                          | Waktu kendaraan masuk atau keluar          |
+| `waktu`           | DATETIME                          | Waktu kendaraan masuk                      |
 | `waktu_keluar`    | DATETIME NULL                     | Waktu kendaraan keluar (diisi saat keluar) |
 | `status`          | ENUM('MASUK','KELUAR')            | Status kendaraan (masuk/keluar)            |
 | `total_bayar`     | INT NULL                          | Total biaya parkir (diisi saat keluar)     |
+
+---
+
+### Tabel tambahan: `penghasilan_parkir`
+
+| Field             | Tipe Data                          | Keterangan                                      |
+| ----------------- | ---------------------------------- | ----------------------------------------------- |
+| `id`              | INT (Primary Key, Auto Increment)  | ID unik data penghasilan                        |
+| `parkir_id`       | INT                                | Relasi ke ID di tabel `parkir`                  |
+| `no_polisi`       | VARCHAR                            | Nomor polisi kendaraan                          |
+| `jenis_kendaraan` | VARCHAR                            | Jenis kendaraan (Motor, Mobil, dll)             |
+| `waktu_masuk`     | DATETIME                           | Waktu kendaraan masuk                           |
+| `waktu_keluar`    | DATETIME                           | Waktu kendaraan keluar                          |
+| `durasi_jam`      | INT                                | Durasi total parkir dalam jam                   |
+| `total_bayar`     | INT                                | Total biaya parkir yang dibayar                 |
+| `created_at`      | DATETIME DEFAULT CURRENT_TIMESTAMP | Tanggal dan waktu data ini dicatat di tabel ini |
 
 ---
 
